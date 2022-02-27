@@ -6,7 +6,7 @@
       <Value Profile="(Default)">quotes.txt</Value>
     </Setting>
     <Setting Name="PortNumber" Type="System.Int32" Scope="User">
-      <Value Profile="(Default)">5678</Value>
+      <Value Profile="(Default)">4567</Value>
     </Setting>
   </Settings>
 </SettingsFile>
