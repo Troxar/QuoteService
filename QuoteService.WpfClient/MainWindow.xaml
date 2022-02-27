@@ -1,0 +1,9 @@
+﻿<Window x:Class="QuoteService.WpfClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Random quotes" Height="250" Width="400">
+		<StackPanel>
+				<Button x:Name="GetQuote" Height="30" Width="400" Click="GetQuote_Click">Get random quote</Button>
+				<TextBox x:Name="TextQuote" Height="200" Width="400" TextWrapping="Wrap" />
+		</StackPanel>
+</Window>
