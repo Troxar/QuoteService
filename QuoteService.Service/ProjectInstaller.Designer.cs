@@ -40,7 +40,7 @@
             // serviceInstaller1
             // 
             this.serviceInstaller1.ServiceName = "RandomQuoteService";
-            this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Manual;
+            this.serviceInstaller1.StartType = System.ServiceProcess.ServiceStartMode.Automatic;
             // 
             // ProjectInstaller
             // 

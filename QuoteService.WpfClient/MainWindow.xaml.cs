@@ -41,7 +41,7 @@ namespace QuoteService.WpfClient
             }
             catch (SocketException ex)
             {
-                MessageBox.Show(ex.Message, "Quote getting error", MessageBoxButton.OK, MessageBoxImage.Error);
+                TextQuote.Text = $"Quote getting error: {ex.Message}";
             }
             finally
             {
