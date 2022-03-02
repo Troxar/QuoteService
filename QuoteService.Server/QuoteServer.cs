@@ -47,7 +47,7 @@ namespace QuoteService.Server
 
         public string GetRandomQuote()
         {
-            if (quotes == null)
+            if (quotes == null || quotes.Count == 0)
             {
                 return "No quotes";
             }

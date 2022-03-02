@@ -8,9 +8,20 @@
 				</Grid.ColumnDefinitions>
 				<Grid.RowDefinitions>
 						<RowDefinition Height="*"/>
-						<RowDefinition Height="5*"/>
+						<RowDefinition Height="4*"/>
+						<RowDefinition Height="*" />
 				</Grid.RowDefinitions>
-				<Button x:Name="GetQuote" Grid.Row="0" Click="GetQuote_Click">Get random quote</Button>
-				<TextBox x:Name="TextQuote" Grid.Row ="1" TextWrapping="Wrap" />
+				<Grid Grid.Row="3">
+						<Grid.ColumnDefinitions>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+								<ColumnDefinition/>
+						</Grid.ColumnDefinitions>
+						<Button x:Name="StartServiceButton" Grid.Column="0" Click="StartServiceButton_Click">Start service</Button>
+						<Button x:Name="StopServiceButton" Grid.Column="1" Click="StopServiceButton_Click">Stop service</Button>
+						<Button x:Name="RefreshQuotesButton" Grid.Column="2" Click="RefreshQuotesButton_Click">Refresh quotes</Button>
+				</Grid>
+				<Button x:Name="GetQuoteButton" Grid.Row="0" Click="GetQuote_Click">Get random quote</Button>
+				<TextBox x:Name="QuoteTextBox" Grid.Row ="1" TextWrapping="Wrap" />
 		</Grid>
 </Window>

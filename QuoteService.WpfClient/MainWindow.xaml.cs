@@ -1,15 +1,25 @@
-﻿using System.Net.Sockets;
+﻿using System;
+using System.Net.Sockets;
+using System.ServiceProcess;
 using System.Text;
 using System.Windows;
 using System.Windows.Input;
+using QuoteService.Service;
 
 namespace QuoteService.WpfClient
 {
     public partial class MainWindow : Window
     {
+        private readonly ServiceController serviceController;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            string serviceName = "RandomQuoteService";
+            serviceController = new ServiceController(serviceName);
+
+            RefreshServiceButtons();
         }
 
         private void GetQuote_Click(object sender, RoutedEventArgs e)
@@ -37,11 +47,11 @@ namespace QuoteService.WpfClient
                     return;
                 }
 
-                TextQuote.Text = Encoding.Unicode.GetString(buffer).Trim('\0');
+                QuoteTextBox.Text = Encoding.Unicode.GetString(buffer).Trim('\0');
             }
             catch (SocketException ex)
             {
-                TextQuote.Text = $"Quote getting error: {ex.Message}";
+                QuoteTextBox.Text = $"Quote getting error: {ex.Message}";
             }
             finally
             {
@@ -57,6 +67,67 @@ namespace QuoteService.WpfClient
             }
 
             Cursor = currentCursor;
+        }
+
+        private void StartServiceButton_Click(object sender, RoutedEventArgs e)
+        {
+            OnServiceCommand(sender, e);
+        }
+
+        private void StopServiceButton_Click(object sender, RoutedEventArgs e)
+        {
+            OnServiceCommand(sender, e);
+        }
+
+        private void RefreshQuotesButton_Click(object sender, RoutedEventArgs e)
+        {
+            OnServiceCommand(sender, e);
+        }
+
+        private void OnServiceCommand(object sender, RoutedEventArgs e)
+        {
+            Cursor currentCursor = Cursor;
+
+            try
+            {
+                if (sender == StartServiceButton)
+                {
+                    serviceController.Start();
+                    serviceController.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
+                }
+                else if (sender == StopServiceButton)
+                {
+                    serviceController.Stop();
+                    serviceController.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
+                }
+                else if (sender == RefreshQuotesButton)
+                {
+                    serviceController.ExecuteCommand(RandomQuoteService.commandRefresh);
+                }
+            }
+            catch (System.ServiceProcess.TimeoutException ex)
+            {
+                QuoteTextBox.Text = $"Timeout: {ex.Message}";
+            }
+            catch (InvalidOperationException ex)
+            {
+                QuoteTextBox.Text = string.Format("Error: {0} {1}", ex.Message, ex.InnerException != null ? ex.InnerException.Message : string.Empty);
+            }
+            finally
+            {
+                Cursor = currentCursor;
+            }
+
+            RefreshServiceButtons();
+        }
+
+        private void RefreshServiceButtons()
+        {
+            ServiceControllerStatus status = serviceController.Status;
+
+            StartServiceButton.IsEnabled = status != ServiceControllerStatus.Running;
+            StopServiceButton.IsEnabled = status != ServiceControllerStatus.Stopped;
+            RefreshQuotesButton.IsEnabled = status == ServiceControllerStatus.Running;
         }
     }
 }
