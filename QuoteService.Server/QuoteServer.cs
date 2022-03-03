@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -12,53 +8,20 @@ namespace QuoteService.Server
 {
     public class QuoteServer
     {
-        TcpListener listener;
-        int port;
-        string filename;
-        List<string> quotes;
-        Random random;
-        Thread listenerThread;
-
-        public QuoteServer() : this("quotes.txt")
+        private readonly IQuoteRepository quotes;
+        private readonly int port;
+        private TcpListener listener;
+        private Thread listenerThread;
+        
+        public QuoteServer(IQuoteRepository quotes, int port)
         {
-
-        }
-
-        public QuoteServer(string filename) : this(filename, 7890)
-        {
-
-        }
-
-        public QuoteServer(string filename, int port)
-        {
-            this.filename = filename;
+            this.quotes = quotes;
             this.port = port;
-
-            random = new Random(Guid.NewGuid().GetHashCode());
-        }
-
-        public void ReadQuotes()
-        {
-            if (File.Exists(filename))
-            {
-                quotes = File.ReadAllLines(filename).ToList();
-            }
-        }
-
-        public string GetRandomQuote()
-        {
-            if (quotes == null || quotes.Count == 0)
-            {
-                return "No quotes";
-            }
-
-            int index = random.Next(0, quotes.Count);
-            return quotes[index];
         }
 
         public void Start()
         {
-            ReadQuotes();
+            quotes.ReadQuotes();
 
             listenerThread = new Thread(ListenerThread);
             listenerThread.IsBackground = true;
@@ -90,7 +53,7 @@ namespace QuoteService.Server
             }
         }
 
-        void ListenerThread()
+        private void ListenerThread()
         {
             const string ipString = "127.0.0.1";
             IPAddress ipAddress = IPAddress.Parse(ipString);
@@ -104,7 +67,7 @@ namespace QuoteService.Server
                 {
                     Socket clientSocket = listener.AcceptSocket();
 
-                    string message = GetRandomQuote();
+                    string message = quotes.GetRandomQuote();
                     UnicodeEncoding encoder = new UnicodeEncoding();
                     byte[] buffer = encoder.GetBytes(message);
 
@@ -120,7 +83,7 @@ namespace QuoteService.Server
 
         public void RefreshQuotes()
         {
-            ReadQuotes();
+            quotes.ReadQuotes();
         }
     }
 }

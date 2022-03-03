@@ -7,8 +7,7 @@ namespace QuoteService.Service
 {
     public partial class RandomQuoteService : ServiceBase
     {
-        QuoteServer quoteServer;
-
+        private QuoteServer quoteServer;
         public const int commandRefresh = 128;
 
         public RandomQuoteService()
@@ -21,8 +20,9 @@ namespace QuoteService.Service
             string filename = Properties.Settings.Default.QuoteFileName;
             string filepath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
             int port = Properties.Settings.Default.PortNumber;
-            
-            quoteServer = new QuoteServer(filepath, port);
+
+            IQuoteRepository quotes = new FileQuoteRepository(filepath);
+            quoteServer = new QuoteServer(quotes, port);
             quoteServer.Start();
         }
 

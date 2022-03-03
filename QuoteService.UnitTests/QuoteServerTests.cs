@@ -10,7 +10,8 @@ namespace QuoteService.UnitTests
         [TestMethod]
         public void Can_Start_And_Stop_Server()
         {
-            QuoteServer target = new QuoteServer("quotes.txt", 4567);
+            IQuoteRepository quotes = new FileQuoteRepository("some_quotes.txt");
+            QuoteServer target = new QuoteServer(quotes, 4567);
 
             try
             {

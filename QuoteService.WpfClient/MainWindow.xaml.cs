@@ -1,70 +1,27 @@
-﻿using System;
-using System.Net.Sockets;
-using System.ServiceProcess;
-using System.Text;
+﻿using System.ServiceProcess;
 using System.Windows;
 using System.Windows.Input;
-using QuoteService.Service;
 
 namespace QuoteService.WpfClient
 {
     public partial class MainWindow : Window
     {
-        private readonly ServiceController serviceController;
+        private readonly ViewModel viewModel;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            string serviceName = "RandomQuoteService";
-            serviceController = new ServiceController(serviceName);
-
+            viewModel = new ViewModel();
             RefreshServiceButtons();
         }
 
         private void GetQuote_Click(object sender, RoutedEventArgs e)
         {
-            const int bufferSize = 1024;
-
             Cursor currentCursor = Cursor;
             Cursor = Cursors.Wait;
 
-            string serverName = Properties.Settings.Default.ServerName;
-            int port = Properties.Settings.Default.PortNumber;
-
-            TcpClient client = new TcpClient();
-            NetworkStream stream = null;
-
-            try
-            {
-                client.Connect(serverName, port);
-                stream = client.GetStream();
-
-                byte[] buffer = new byte[bufferSize];
-                int received = stream.Read(buffer, 0, bufferSize);
-                if (received <= 0)
-                {
-                    return;
-                }
-
-                QuoteTextBox.Text = Encoding.Unicode.GetString(buffer).Trim('\0');
-            }
-            catch (SocketException ex)
-            {
-                QuoteTextBox.Text = $"Quote getting error: {ex.Message}";
-            }
-            finally
-            {
-                if (stream != null)
-                {
-                    stream.Close();
-                }
-
-                if (client.Connected)
-                {
-                    client.Close();
-                }
-            }
+            QuoteTextBox.Text = ViewModel.GetQuote();
 
             Cursor = currentCursor;
         }
@@ -87,43 +44,34 @@ namespace QuoteService.WpfClient
         private void OnServiceCommand(object sender, RoutedEventArgs e)
         {
             Cursor currentCursor = Cursor;
+            string errorMessage = string.Empty;
 
-            try
+            if (sender == StartServiceButton)
             {
-                if (sender == StartServiceButton)
-                {
-                    serviceController.Start();
-                    serviceController.WaitForStatus(ServiceControllerStatus.Running, TimeSpan.FromSeconds(10));
-                }
-                else if (sender == StopServiceButton)
-                {
-                    serviceController.Stop();
-                    serviceController.WaitForStatus(ServiceControllerStatus.Stopped, TimeSpan.FromSeconds(10));
-                }
-                else if (sender == RefreshQuotesButton)
-                {
-                    serviceController.ExecuteCommand(RandomQuoteService.commandRefresh);
-                }
+                viewModel.Start(out errorMessage);
             }
-            catch (System.ServiceProcess.TimeoutException ex)
+            else if (sender == StopServiceButton)
             {
-                QuoteTextBox.Text = $"Timeout: {ex.Message}";
+                viewModel.Stop(out errorMessage);
             }
-            catch (InvalidOperationException ex)
+            else if (sender == RefreshQuotesButton)
             {
-                QuoteTextBox.Text = string.Format("Error: {0} {1}", ex.Message, ex.InnerException != null ? ex.InnerException.Message : string.Empty);
-            }
-            finally
+                viewModel.RefreshQuotes(out errorMessage);
+            };
+
+            if (!string.IsNullOrEmpty(errorMessage))
             {
-                Cursor = currentCursor;
+                QuoteTextBox.Text = $"Timeout: {errorMessage}";
             }
+
+            Cursor = currentCursor;
 
             RefreshServiceButtons();
         }
 
         private void RefreshServiceButtons()
         {
-            ServiceControllerStatus status = serviceController.Status;
+            ServiceControllerStatus status = viewModel.GetServiceStatus();
 
             StartServiceButton.IsEnabled = status != ServiceControllerStatus.Running;
             StopServiceButton.IsEnabled = status != ServiceControllerStatus.Stopped;

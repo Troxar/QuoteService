@@ -41,6 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FileQuoteRepository.cs" />
+    <Compile Include="IQuoteRepository.cs" />
     <Compile Include="QuoteServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
